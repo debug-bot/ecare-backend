@@ -1,4 +1,4 @@
-djangorestframework3.12.4
+djangorestframework==3.12.4
 django-filter==2.4.0
 djangorestframework-simplejwt==4.6.0
 django-cors-headers==3.7.0
