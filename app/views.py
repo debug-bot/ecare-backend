@@ -8,6 +8,9 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from django.conf import settings
+from django.core.mail import send_mail
+
 from .models import Cart, Order, Patient, Pharmacy, Lab, Rider, Test, User
 
 from .serializers import ShowLabsSerializer, ShowPharmaciesSerializer, ShowTestsSerializer, SubmitPatientDataSerializer
@@ -139,9 +142,22 @@ class CartItemViewSet(APIView):
             return 0
         
 class OrderPlaceViewSet(APIView):
+    permission_classes=[permissions.IsAuthenticated]
     def post(self, request):
-        data = request.data.get('data',None)
-        print(data)
-        Order.objects.create(patient=Patient.objects.get(user=request.user),items=data)
-        return Response('ok')
-    
+        try:
+            data = request.data.get('data',None)
+            price = request.data.get('price',None)
+            discount = request.data.get('discount',None)
+            discounted_price = request.data.get('discounted_price',None)
+            items = request.data.get('items',None)
+            address = request.data.get('address',None)
+            print(request.data)
+            patient=Patient.objects.get(id=address)
+            Order.objects.create(patient=patient,items=data)
+            message = f'Your order successfully placed\n\n       Total Items Ordered = {items}\n\n   Actual Price = Rs. {price}\n   Discount = Rs. {discount}\n   Discounted Price = Rs. {discounted_price}\n\n\n  Shipment Address = {patient.address}\n  City = {patient.city}\n  Phone Number = {patient.phone}\n  Name = {patient.name}\n\n\n-Thank You for trusting eCare!'
+            send_mail('ORDER Placed',message,settings.EMAIL_HOST_USER,['chhamza2655@gmail.com','adnan.newton@gmail.com',request.user.email])
+            return Response('ok')
+        except Exception as e:
+            print(e)
+            send_mail('ERROR placing order','Something went wrong, your order could not be placed',settings.EMAIL_HOST_USER,['usmanbinshafiq@gmail.com','adnan.newton@gmail.com',request.user.email])
+            return Response('error')

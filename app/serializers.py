@@ -31,7 +31,7 @@ class SubmitPatientDataSerializer(serializers.ModelSerializer):
 class ShowPatientDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
-        fields = ['name', 'phone', 'city', 'address']
+        fields = ['id','name', 'phone', 'city', 'address']
     def create(self, validated_data):
         user = self.context['request'].user
         name = user.first_name+' '+user.middle_name+' '+user.last_name
